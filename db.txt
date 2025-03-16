@@ -1,0 +1,26 @@
+# PostgreSQL 데이터베이스 설정 정보
+
+## 데이터베이스 연결 정보
+DATABASE_URL=postgresql://dsyou20@localhost:5432/qshare
+
+## PostgreSQL 설치 정보
+- 버전: PostgreSQL 14.17
+- 설치 경로: /opt/homebrew/var/postgresql@14
+- 데이터베이스명: qshare
+
+## 주요 명령어
+# 서비스 관리
+brew services start postgresql@14    # 서비스 시작
+brew services stop postgresql@14     # 서비스 중지
+brew services restart postgresql@14  # 서비스 재시작
+
+# PostgreSQL CLI 명령어
+psql qshare                         # 데이터베이스 접속
+\l                                  # 데이터베이스 목록
+\dt                                 # 테이블 목록
+\q                                  # PostgreSQL 종료
+
+## 참고사항
+- 기본 포트: 5432
+- 인코딩: UTF-8
+- Locale: C 

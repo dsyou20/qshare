@@ -42,4 +42,6 @@
 *.ntvs*
 *.njsproj
 *.sln
-*.sw? 
+*.sw?
+
+DATABASE_URL=postgresql://dsyou20@localhost:5432/qshare 
