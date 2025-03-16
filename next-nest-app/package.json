@@ -1,0 +1,20 @@
+{
+  "name": "next-nest-app",
+  "version": "1.0.0",
+  "description": "Next.js frontend with NestJS backend",
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run start:dev",
+    "build": "turbo run build",
+    "start": "turbo run start",
+    "clean": "turbo run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "turbo": "^1.12.5"
+  },
+  "workspaces": [
+    "frontend",
+    "backend"
+  ]
+}
