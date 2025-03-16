@@ -80,9 +80,37 @@ export interface UpdateScriptDto {
   isPublic?: boolean;
 }
 
+export interface ShareScriptDto {
+  shareWithAll?: boolean;
+  userIds?: number[];
+}
+
+export interface User {
+  id: number;
+  email: string;
+  name?: string;
+}
+
+export interface ShareInfo {
+  script: {
+    id: string;
+    title: string;
+    isPublic: boolean;
+  };
+  shares: User[];
+}
+
 export const getMyScripts = async (): Promise<Script[]> => {
   const response = await api.get('/scripts/my');
   return response.data;
+};
+
+export const getSharedScripts = async (): Promise<Script[]> => {
+  const response = await api.get('/scripts/shared-with-me');
+  return response.data.map((script: any) => ({
+    ...script,
+    user: script.author
+  }));
 };
 
 export const getScript = async (id: string): Promise<Script> => {
@@ -102,4 +130,24 @@ export const updateScript = async (id: string, data: UpdateScriptDto): Promise<S
 
 export const deleteScript = async (id: string): Promise<void> => {
   await api.delete(`/scripts/${id}`);
+};
+
+export const getShares = async (id: string): Promise<ShareInfo> => {
+  const response = await api.get(`/scripts/${id}/shares`);
+  return response.data;
+};
+
+export const shareScript = async (id: string, data: ShareScriptDto): Promise<any> => {
+  const response = await api.post(`/scripts/${id}/share`, data);
+  return response.data;
+};
+
+export const removeShare = async (scriptId: string, userId: number): Promise<any> => {
+  const response = await api.delete(`/scripts/${scriptId}/share/${userId}`);
+  return response.data;
+};
+
+export const searchUsers = async (query: string): Promise<User[]> => {
+  const response = await api.get(`/users/search?query=${encodeURIComponent(query)}`);
+  return response.data;
 }; 

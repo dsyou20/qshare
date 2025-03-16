@@ -8,72 +8,54 @@ import {
   Typography, 
   Container, 
   Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
+  Button,
+  Stack,
+  CircularProgress,
+  Alert,
+  Card,
+  CardContent,
+  CardActions,
   IconButton,
   Tooltip,
+  Chip,
 } from '@mui/material';
-import {
-  Visibility as ViewIcon,
-} from '@mui/icons-material';
-
-interface SharedScript {
-  id: number;
-  title: string;
-  description: string;
-  author: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import { Visibility as VisibilityIcon } from '@mui/icons-material';
+import { getSharedScripts, type Script } from '@/lib/scripts';
 
 export default function SharedScriptsPage() {
   const router = useRouter();
-  const { user, loading } = useAuth();
-  const [scripts, setScripts] = useState<SharedScript[]>([]);
-  const [loadingScripts, setLoadingScripts] = useState(true);
+  const { user, loading: authLoading } = useAuth();
+  const [scripts, setScripts] = useState<Script[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!authLoading && !user) {
       router.push('/login');
     }
-  }, [user, loading, router]);
+  }, [user, authLoading, router]);
 
   useEffect(() => {
+    const fetchScripts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await getSharedScripts();
+        setScripts(data);
+      } catch (error) {
+        console.error('공유된 스크립트 목록 조회 실패:', error);
+        setError('공유된 스크립트 목록을 불러오는데 실패했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (user) {
-      // TODO: API 호출로 공유 스크립트 목록 가져오기
-      const mockScripts: SharedScript[] = [
-        {
-          id: 1,
-          title: '공유 스크립트 1',
-          description: '이것은 공유된 스크립트입니다.',
-          author: '홍길동',
-          createdAt: '2024-03-20',
-          updatedAt: '2024-03-20',
-        },
-        {
-          id: 2,
-          title: '공유 스크립트 2',
-          description: '이것은 또 다른 공유 스크립트입니다.',
-          author: '김철수',
-          createdAt: '2024-03-21',
-          updatedAt: '2024-03-21',
-        },
-      ];
-      setScripts(mockScripts);
-      setLoadingScripts(false);
+      fetchScripts();
     }
   }, [user]);
 
-  const handleViewScript = (id: number) => {
-    // TODO: 스크립트 상세 페이지로 이동
-    console.log('스크립트 보기:', id);
-  };
-
-  if (loading || loadingScripts) {
+  if (authLoading) {
     return (
       <Container>
         <Typography>로딩 중...</Typography>
@@ -86,44 +68,69 @@ export default function SharedScriptsPage() {
   }
 
   return (
-    <Container>
+    <Container maxWidth="xl">
       <Box sx={{ mt: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          공유 스크립트
-        </Typography>
-        
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>제목</TableCell>
-                <TableCell>설명</TableCell>
-                <TableCell>작성자</TableCell>
-                <TableCell>생성일</TableCell>
-                <TableCell>수정일</TableCell>
-                <TableCell align="right">작업</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {scripts.map((script) => (
-                <TableRow key={script.id}>
-                  <TableCell>{script.title}</TableCell>
-                  <TableCell>{script.description}</TableCell>
-                  <TableCell>{script.author}</TableCell>
-                  <TableCell>{new Date(script.createdAt).toLocaleDateString()}</TableCell>
-                  <TableCell>{new Date(script.updatedAt).toLocaleDateString()}</TableCell>
-                  <TableCell align="right">
-                    <Tooltip title="보기">
-                      <IconButton onClick={() => handleViewScript(script.id)}>
-                        <ViewIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+          <Typography variant="h4" component="h1">
+            공유된 스크립트
+          </Typography>
+        </Box>
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            <CircularProgress />
+          </Box>
+        ) : scripts.length === 0 ? (
+          <Paper sx={{ p: 4, textAlign: 'center' }}>
+            <Typography variant="h6" color="text.secondary">
+              공유된 스크립트가 없습니다.
+            </Typography>
+          </Paper>
+        ) : (
+          <Stack spacing={2}>
+            {scripts.map((script) => (
+              <Card key={script.id}>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    {script.title}
+                    {script.isPublic && (
+                      <Chip
+                        label="공개"
+                        size="small"
+                        color="primary"
+                        sx={{ ml: 1, fontSize: '0.7rem' }}
+                      />
+                    )}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                    작성자: {script.user?.email || '알 수 없음'}
+                  </Typography>
+                  {script.description && (
+                    <Typography variant="body2" color="text.secondary" paragraph>
+                      {script.description}
+                    </Typography>
+                  )}
+                  <Typography variant="caption" color="text.secondary">
+                    마지막 수정: {new Date(script.updatedAt).toLocaleString()}
+                  </Typography>
+                </CardContent>
+                <CardActions>
+                  <Tooltip title="보기">
+                    <IconButton onClick={() => router.push(`/shared-scripts/${script.id}`)}>
+                      <VisibilityIcon />
+                    </IconButton>
+                  </Tooltip>
+                </CardActions>
+              </Card>
+            ))}
+          </Stack>
+        )}
       </Box>
     </Container>
   );

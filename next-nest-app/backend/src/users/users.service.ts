@@ -37,4 +37,30 @@ export class UsersService {
       where: { id },
     });
   }
+
+  async searchUsers(query: string, currentUserId: number) {
+    if (!query || query.trim() === '') {
+      return [];
+    }
+    
+    return this.prisma.user.findMany({
+      where: {
+        AND: [
+          {
+            OR: [
+              { email: { contains: query, mode: 'insensitive' } },
+              { name: { contains: query, mode: 'insensitive' } }
+            ]
+          },
+          { id: { not: currentUserId } }  // 자기 자신은 제외
+        ]
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+      },
+      take: 10  // 최대 10명까지만 검색
+    });
+  }
 } 
