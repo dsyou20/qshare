@@ -2,23 +2,41 @@
 **/node_modules
 **/.pnp
 **/.pnp.js
+**/package-lock.json
+**/yarn.lock
+**/.yarn/cache
+**/.yarn/unplugged
+**/.yarn/build-state.yml
+**/.yarn/install-state.gz
 
 # testing
 **/coverage
+**/.nyc_output
+**/junit.xml
+**/.coverage
+**/.jest
+**/test-results
 
 # next.js
 **/.next/
 **/out/
+**/.swc/
 
 # nestjs
 **/dist
+**/.nestjs_repl_history
 
 # production
 **/build
+**/release
+**/releases
 
 # misc
 .DS_Store
 **/*.pem
+**/.env
+**/.env.*
+!**/.env.example
 
 # debug
 **/npm-debug.log*
@@ -44,4 +62,14 @@
 *.sln
 *.sw?
 
-DATABASE_URL=postgresql://dsyou20@localhost:5432/qshare 
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Turbo
+.turbo 

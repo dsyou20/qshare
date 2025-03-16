@@ -121,3 +121,17 @@
 2025-03-16T07:12:44.772743Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("frontend"), path: AnchoredSystemPathBuf("frontend") }}))
 2025-03-16T07:12:53.373684Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("backend/.env.example")}
 2025-03-16T07:12:53.373696Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("backend"), path: AnchoredSystemPathBuf("backend") }}))
+2025-03-16T07:20:07.677804Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("\u{8}dbms")}
+2025-03-16T07:20:07.677826Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-03-16T07:20:44.280130Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("\u{8}dbms")}
+2025-03-16T07:20:44.280138Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-03-16T07:27:32.481203Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("backend/package.json")}
+2025-03-16T07:27:32.481224Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("backend"), path: AnchoredSystemPathBuf("backend") }}))
+2025-03-16T07:27:53.381358Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("backend/prisma/schema.prisma"), AnchoredSystemPathBuf("backend/.gitignore"), AnchoredSystemPathBuf("backend/prisma")}
+2025-03-16T07:27:53.381366Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("backend"), path: AnchoredSystemPathBuf("backend") }}))
+2025-03-16T07:56:07.483210Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("backend/.gitignore")}
+2025-03-16T07:56:07.483265Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("backend"), path: AnchoredSystemPathBuf("backend") }}))
+2025-03-16T07:56:44.476074Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("backend/src/app.controller.ts")}
+2025-03-16T07:56:44.476083Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("backend"), path: AnchoredSystemPathBuf("backend") }}))
+2025-03-16T07:58:12.177510Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("backend/README.md")}
+2025-03-16T07:58:12.177540Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("backend"), path: AnchoredSystemPathBuf("backend") }}))
