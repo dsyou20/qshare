@@ -16,7 +16,7 @@ async function bootstrap() {
   
   // CORS 설정
   app.enableCors({
-    origin: configService.get('FRONTEND_URL'),
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
     credentials: true,
   });
 
@@ -62,7 +62,7 @@ async function bootstrap() {
   });
 
   // 서버 시작
-  const port = configService.get('PORT');
+  const port = process.env.PORT || 3001;
   await app.listen(port);
   
   console.log(`Application is running on: http://localhost:${port}`);
