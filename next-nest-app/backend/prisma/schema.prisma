@@ -14,9 +14,64 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
   name      String?
+  password  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // 관계 정의
+  scripts        Script[]    // 사용자가 작성한 스크립트
+  favorites      Favorite[]  // 찜한 스크립트
+  sharedScripts  Share[]     // 공유받은 스크립트
+}
+
+model Script {
+  id          Int       @id @default(autoincrement())
+  title       String
+  content     String    // Python 스크립트 내용
+  description String?   // 스크립트 설명
+  isPublic    Boolean   @default(false)  // 전체 공개 여부
+  useCount    Int       @default(0)      // 사용 횟수
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // 관계 정의
+  authorId    Int
+  author      User       @relation(fields: [authorId], references: [id])
+  favorites   Favorite[] // 이 스크립트를 찜한 사용자들
+  shares      Share[]    // 이 스크립트를 공유받은 사용자들
+
+  @@index([authorId])
+}
+
+model Share {
+  id        Int      @id @default(autoincrement())
+  scriptId  Int
+  userId    Int      // 공유받은 사용자 ID
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+
+  // 관계 정의
+  script    Script   @relation(fields: [scriptId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([scriptId, userId])
+  @@index([userId])
+  @@index([scriptId])
+}
+
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  scriptId  Int
+  userId    Int
+  createdAt DateTime @default(now())
+
+  // 관계 정의
+  script    Script   @relation(fields: [scriptId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([scriptId, userId])
+  @@index([userId])
+  @@index([scriptId])
 }

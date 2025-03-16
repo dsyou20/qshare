@@ -1,27 +1,45 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateUserDto, UserResponseDto } from '../dto/user.dto';
+import { Controller, Get, Put, Delete, Body, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { User } from '../decorators/user.decorator';
+import { UserService } from './user.service';
+import { UpdateUserDto, UserProfileDto, UserStatsDto } from '../dto/user.dto';
 
 @ApiTags('users')
 @Controller('users')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 export class UserController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly userService: UserService) {}
 
-  @Post()
-  @ApiOperation({ summary: '사용자 생성' })
-  @ApiResponse({ status: 201, description: '사용자가 성공적으로 생성됨', type: UserResponseDto })
-  async createUser(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    const { password, ...userData } = createUserDto;
-    return this.prisma.user.create({
-      data: userData
-    });
+  @Get('profile')
+  @ApiOperation({ summary: '내 프로필 조회' })
+  @ApiResponse({ status: 200, type: UserProfileDto })
+  async getProfile(@User('id') userId: number): Promise<UserProfileDto> {
+    return this.userService.getProfile(userId);
   }
 
-  @Get()
-  @ApiOperation({ summary: '사용자 목록 조회' })
-  @ApiResponse({ status: 200, description: '사용자 목록을 성공적으로 조회함', type: [UserResponseDto] })
-  async findAll(): Promise<UserResponseDto[]> {
-    return this.prisma.user.findMany();
+  @Get('stats')
+  @ApiOperation({ summary: '내 통계 조회' })
+  @ApiResponse({ status: 200, type: UserStatsDto })
+  async getStats(@User('id') userId: number): Promise<UserStatsDto> {
+    return this.userService.getStats(userId);
+  }
+
+  @Put('profile')
+  @ApiOperation({ summary: '프로필 수정' })
+  @ApiResponse({ status: 200, type: UserProfileDto })
+  async updateProfile(
+    @User('id') userId: number,
+    @Body() updateUserDto: UpdateUserDto,
+  ): Promise<UserProfileDto> {
+    return this.userService.update(userId, updateUserDto);
+  }
+
+  @Delete('profile')
+  @ApiOperation({ summary: '회원 탈퇴' })
+  @ApiResponse({ status: 200, description: '회원 탈퇴 성공' })
+  async deleteProfile(@User('id') userId: number): Promise<void> {
+    return this.userService.delete(userId);
   }
 } 
