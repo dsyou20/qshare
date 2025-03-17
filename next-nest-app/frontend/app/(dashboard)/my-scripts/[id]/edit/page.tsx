@@ -1,32 +1,42 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
-import { 
-  Box, 
-  Typography, 
-  Container, 
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  Box,
+  Typography,
+  Container,
   Paper,
   TextField,
   Button,
   Stack,
   Alert,
   CircularProgress,
-} from '@mui/material';
-import { Save as SaveIcon } from '@mui/icons-material';
-import dynamic from 'next/dynamic';
-import type { MarkerSeverity } from 'monaco-editor';
-import { getScript, updateScript, type Script } from '@/lib/scripts';
+} from "@mui/material";
+import { Save as SaveIcon } from "@mui/icons-material";
+import dynamic from "next/dynamic";
+import type { MarkerSeverity } from "monaco-editor";
+import { getScript, updateScript, type Script } from "@/lib/scripts";
 
-const MonacoEditor = dynamic(() => import('@monaco-editor/react').then((mod) => mod.Editor), {
-  ssr: false,
-  loading: () => (
-    <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <Typography>에디터 로딩 중...</Typography>
-    </Box>
-  ),
-});
+const MonacoEditor = dynamic(
+  () => import("@monaco-editor/react").then((mod) => mod.Editor),
+  {
+    ssr: false,
+    loading: () => (
+      <Box
+        sx={{
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Typography>에디터 로딩 중...</Typography>
+      </Box>
+    ),
+  }
+);
 
 interface EditorError {
   startLineNumber: number;
@@ -38,9 +48,9 @@ interface EditorError {
 export default function EditScriptPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [code, setCode] = useState('');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [code, setCode] = useState("");
   const [errors, setErrors] = useState<EditorError[]>([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -48,7 +58,7 @@ export default function EditScriptPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/login');
+      router.push("/login");
     }
   }, [user, authLoading, router]);
 
@@ -58,12 +68,25 @@ export default function EditScriptPage({ params }: { params: { id: string } }) {
         setLoading(true);
         setError(null);
         const script = await getScript(params.id);
+
+        console.log("편집을 위해 불러온 스크립트 데이터:", script);
+
         setTitle(script.title);
-        setDescription(script.description || '');
-        setCode(script.code);
+        setDescription(script.description || "");
+
+        // content 또는 code 필드 확인
+        if (script.code) {
+          setCode(script.code);
+        } else if ((script as any).content) {
+          setCode((script as any).content);
+        } else {
+          console.error("스크립트에 code 또는 content 필드가 없습니다");
+          setError("스크립트 내용을 불러올 수 없습니다.");
+          setCode("");
+        }
       } catch (error) {
-        console.error('스크립트 조회 실패:', error);
-        setError('스크립트를 불러오는데 실패했습니다.');
+        console.error("스크립트 조회 실패:", error);
+        setError("스크립트를 불러오는데 실패했습니다.");
       } finally {
         setLoading(false);
       }
@@ -76,19 +99,33 @@ export default function EditScriptPage({ params }: { params: { id: string } }) {
 
   const handleSave = async () => {
     try {
+      if (!title.trim()) {
+        setError("제목을 입력해주세요.");
+        return;
+      }
+
+      if (!code.trim()) {
+        setError("스크립트 내용을 입력해주세요.");
+        return;
+      }
+
       setSaving(true);
       setError(null);
-      
-      await updateScript(params.id, {
+
+      const updateData = {
         title,
         description,
         code,
-      });
-      
-      router.push('/my-scripts');
+      };
+
+      console.log("스크립트 업데이트 요청 데이터:", updateData);
+
+      await updateScript(params.id, updateData);
+
+      router.push("/my-scripts");
     } catch (error) {
-      console.error('스크립트 수정 실패:', error);
-      setError('스크립트 수정에 실패했습니다. 다시 시도해주세요.');
+      console.error("스크립트 수정 실패:", error);
+      setError("스크립트 수정에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setSaving(false);
     }
@@ -103,7 +140,7 @@ export default function EditScriptPage({ params }: { params: { id: string } }) {
   if (authLoading || loading) {
     return (
       <Container>
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
           <CircularProgress />
         </Box>
       </Container>
@@ -121,24 +158,32 @@ export default function EditScriptPage({ params }: { params: { id: string } }) {
           스크립트 수정
         </Typography>
 
-        <Box sx={{ mb: 2, display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+        <Box
+          sx={{ mb: 2, display: "flex", gap: 1, justifyContent: "flex-end" }}
+        >
           <Button
             variant="outlined"
-            onClick={() => router.push('/my-scripts')}
+            onClick={() => router.push("/my-scripts")}
             disabled={saving}
           >
             취소
           </Button>
           <Button
             variant="contained"
-            startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
+            startIcon={
+              saving ? (
+                <CircularProgress size={20} color="inherit" />
+              ) : (
+                <SaveIcon />
+              )
+            }
             onClick={handleSave}
             disabled={!title.trim() || hasErrors || saving}
           >
-            {saving ? '저장 중...' : '저장'}
+            {saving ? "저장 중..." : "저장"}
           </Button>
         </Box>
-        
+
         <Stack spacing={3}>
           <Paper sx={{ p: 2 }}>
             <Stack spacing={2}>
@@ -181,18 +226,18 @@ export default function EditScriptPage({ params }: { params: { id: string } }) {
             </Alert>
           )}
 
-          <Paper sx={{ height: 'calc(100vh - 400px)' }}>
+          <Paper sx={{ height: "calc(100vh - 400px)" }}>
             <MonacoEditor
               height="100%"
               defaultLanguage="python"
               defaultValue={code}
-              onChange={(value) => setCode(value || '')}
+              onChange={(value) => setCode(value || "")}
               onValidate={handleEditorValidation}
               theme="vs-dark"
               options={{
                 minimap: { enabled: false },
                 fontSize: 14,
-                lineNumbers: 'on',
+                lineNumbers: "on",
                 roundedSelection: false,
                 scrollBeyondLastLine: false,
                 automaticLayout: true,
@@ -204,4 +249,4 @@ export default function EditScriptPage({ params }: { params: { id: string } }) {
       </Box>
     </Container>
   );
-} 
+}
