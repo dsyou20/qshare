@@ -8,7 +8,7 @@ export interface User {
 }
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://192.168.100.176:16001/api',
   withCredentials: true,
 });
 

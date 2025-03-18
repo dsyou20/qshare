@@ -19,13 +19,17 @@ services:
       context: ./next-nest-app
       dockerfile: Dockerfile
     ports:
-      - "16001:3001"  # API
-      - "16002:5555"  # PRISIMA
-      - "16003:3000"  # 웹
+      - "16001:3001" # API
+      - "16002:5555" # PRISIMA
+      - "16003:3000" # 웹
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/qshare
+      - FRONTEND_URL=http://ect2.iptime.org:16003
     volumes:
-      - ./next-nest-app:/app
+      - type: bind
+        source: ./next-nest-app
+        target: /app
+    command: sh -c "cd backend && npm pkg set dependencies.@nestjs/swagger='^7.3.0' dependencies.@nestjs/mapped-types='^2.0.5' dependencies.typeorm='^0.3.20' && cd .. && npm install && cd backend && npx prisma generate && npx prisma db push --accept-data-loss && cd .. && npm run build && cd frontend && npm run start & cd backend && npm run start:prod"
     depends_on:
       - postgres
     networks:
@@ -34,6 +38,7 @@ services:
 volumes:
   postgres_data:
 
+
 networks:
   qshare-network:
-    driver: bridge 
+    driver: bridge

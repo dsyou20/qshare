@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: 'http://localhost:3001/api',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://192.168.100.176:16001/api',
+  timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },

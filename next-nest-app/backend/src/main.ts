@@ -16,7 +16,11 @@ async function bootstrap() {
   
   // CORS 설정
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: [
+      process.env.FRONTEND_URL || 'http://localhost:3000',
+      'http://192.168.100.176:16003',
+      'http://ect2.iptime.org:16003'
+    ],
     credentials: true,
   });
 
