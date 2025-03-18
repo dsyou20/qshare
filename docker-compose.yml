@@ -13,6 +13,15 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - qshare-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   app:
     build:
@@ -29,6 +38,15 @@ services:
       - type: bind
         source: ./next-nest-app
         target: /app
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     command: sh -c "cd backend && npm pkg set dependencies.@nestjs/swagger='^7.3.0' dependencies.@nestjs/mapped-types='^2.0.5' dependencies.typeorm='^0.3.20' && cd .. && npm install && cd backend && npx prisma generate && npx prisma db push --accept-data-loss && cd .. && npm run build && cd frontend && npm run start & cd backend && npm run start:prod"
     depends_on:
       - postgres
