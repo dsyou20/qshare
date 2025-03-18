@@ -24,6 +24,8 @@ services:
       - "16003:3000"  # 추가 서비스
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/qshare
+    volumes:
+      - ./next-nest-app:/app
     depends_on:
       - postgres
     networks:

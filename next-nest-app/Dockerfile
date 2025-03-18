@@ -1,37 +1,11 @@
-# Build stage
-FROM node:18-alpine AS builder
-
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-
-# Install dependencies
-RUN npm install
-
-# Copy source code
-COPY . .
-
-# Build application
-RUN npm run build
-
-# Production stage
+# Base image
 FROM node:18-alpine
 
+# Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Expose ports
+EXPOSE 3000 3001 5555
 
-# Install production dependencies only
-RUN npm install --production
-
-# Copy built application from builder stage
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/.next ./.next
-
-# Expose port
-EXPOSE 3000
-
-# Start the application
-CMD ["npm", "run", "dev"] 
+# Set default command
+CMD ["sh", "-c", "npm install && npm run dev"] 
