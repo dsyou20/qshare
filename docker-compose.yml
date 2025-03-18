@@ -19,9 +19,9 @@ services:
       context: ./next-nest-app
       dockerfile: Dockerfile
     ports:
-      - "16001:3001"  # Next.js 프론트엔드
-      - "16002:5555"  # NestJS 백엔드
-      - "16003:3000"  # 추가 서비스
+      - "16001:3001"  # API
+      - "16002:5555"  # PRISIMA
+      - "16003:3000"  # 웹
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/qshare
     volumes:
