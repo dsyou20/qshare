@@ -35,32 +35,28 @@ async function bootstrap() {
     .addTag('auth', '인증 관련 API')
     .addTag('users', '사용자 관련 API')
     .addTag('scripts', '스크립트 관련 API')
+    .addTag('admin', '관리자 관련 API')
     .addBearerAuth(
       {
         type: 'http',
         scheme: 'bearer',
         bearerFormat: 'JWT',
-        name: 'JWT',
-        description: 'JWT 토큰을 입력하세요',
+        name: 'Authorization',
+        description: 'JWT 토큰을 입력하세요. 예: Bearer {token}',
         in: 'header',
       },
       'access-token',
     )
     .build();
 
-  const document = SwaggerModule.createDocument(app, config, {
-    deepScanRoutes: true,
-  });
+  const document = SwaggerModule.createDocument(app, config);
 
   SwaggerModule.setup('docs', app, document, {
     swaggerOptions: {
       persistAuthorization: true,
-      defaultModelsExpandDepth: 3,
-      defaultModelExpandDepth: 3,
-      docExpansion: 'list',
+      docExpansion: 'none',
       filter: true,
-      tagsSorter: 'alpha',
-      operationsSorter: 'alpha',
+      defaultModelsExpandDepth: -1,
     },
     customSiteTitle: 'QGIS Script Share API Docs',
   });

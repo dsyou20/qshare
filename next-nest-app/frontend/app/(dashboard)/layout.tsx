@@ -24,6 +24,7 @@ import {
   Description as ScriptIcon,
   Share as ShareIcon,
   Logout as LogoutIcon,
+  AdminPanelSettings as AdminIcon,
 } from '@mui/icons-material';
 import { logout } from '@/lib/auth';
 
@@ -57,6 +58,9 @@ export default function DashboardLayout({
   const menuItems = [
     { text: '내 스크립트', icon: <ScriptIcon />, path: '/my-scripts' },
     { text: '공유 스크립트', icon: <ShareIcon />, path: '/shared-scripts' },
+    ...(user?.role === 'ADMIN' ? [
+      { text: '관리자 페이지', icon: <AdminIcon />, path: '/admin' }
+    ] : []),
   ];
 
   const drawer = (

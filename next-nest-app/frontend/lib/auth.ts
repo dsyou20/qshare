@@ -1,11 +1,15 @@
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 export interface User {
+  role: string;
   id: number;
   email: string;
   name: string;
   createdAt: string;
 }
+
+const TOKEN_COOKIE_NAME = 'qshare_token';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://192.168.100.176:16001/api',
@@ -15,13 +19,7 @@ const api = axios.create({
 // 요청 인터셉터
 api.interceptors.request.use(
   (config) => {
-    console.log('API 요청:', {
-      url: config.url,
-      method: config.method,
-      data: config.data,
-      headers: config.headers,
-    });
-    const token = localStorage.getItem('token');
+    const token = Cookies.get(TOKEN_COOKIE_NAME);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -36,20 +34,13 @@ api.interceptors.request.use(
 // 응답 인터셉터
 api.interceptors.response.use(
   (response) => {
-    console.log('API 응답:', {
-      url: response.config.url,
-      status: response.status,
-      data: response.data,
-    });
     return response;
   },
   (error) => {
-    console.error('API 응답 에러:', {
-      url: error.config?.url,
-      status: error.response?.status,
-      data: error.response?.data,
-      message: error.message,
-    });
+    if (error.response?.status === 401) {
+      // 인증 에러시 토큰 삭제
+      Cookies.remove(TOKEN_COOKIE_NAME);
+    }
     return Promise.reject(error);
   }
 );
@@ -59,7 +50,10 @@ export const login = async (email: string, password: string) => {
     email,
     password,
   });
-  return { token: response.data.access_token, user: response.data.user };
+  const { access_token, user } = response.data;
+  // 쿠키에 토큰 저장 (7일 유효)
+  Cookies.set(TOKEN_COOKIE_NAME, access_token, { expires: 7 });
+  return { token: access_token, user };
 };
 
 export const register = async (email: string, password: string, name: string) => {
@@ -68,11 +62,14 @@ export const register = async (email: string, password: string, name: string) =>
     password,
     name,
   });
-  return { token: response.data.access_token, user: response.data.user };
+  const { access_token, user } = response.data;
+  // 쿠키에 토큰 저장 (7일 유효)
+  Cookies.set(TOKEN_COOKIE_NAME, access_token, { expires: 7 });
+  return { token: access_token, user };
 };
 
 export const logout = async () => {
-  localStorage.removeItem('token');
+  Cookies.remove(TOKEN_COOKIE_NAME);
 };
 
 export const getCurrentUser = async (): Promise<User | null> => {
@@ -82,4 +79,8 @@ export const getCurrentUser = async (): Promise<User | null> => {
   } catch (error) {
     return null;
   }
+};
+
+export const getAuthToken = (): string | undefined => {
+  return Cookies.get(TOKEN_COOKIE_NAME);
 }; 

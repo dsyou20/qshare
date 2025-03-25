@@ -2,7 +2,7 @@ import { Controller, Post, Body, UnauthorizedException, UseGuards, Get, Req } fr
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto, TokenResponseDto } from '../dto/auth.dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { JwtAuthGuard } from './jwt-auth.guard';
 import { Request } from 'express';
 import { JwtPayload } from './types/jwt-payload.type';
 

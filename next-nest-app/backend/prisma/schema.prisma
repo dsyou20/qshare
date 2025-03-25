@@ -18,6 +18,7 @@ model User {
   email     String    @unique
   name      String?
   password  String
+  role      String    @default("USER")  // "USER" 또는 "ADMIN"
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
