@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateScriptDto } from './dto/create-script.dto';
 import { UpdateScriptDto } from './dto/update-script.dto';
@@ -10,7 +10,25 @@ export class ScriptsService {
     private prisma: PrismaService,
   ) {}
 
+  private async checkUserSuspension(userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true }
+    });
+
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    if (user.role === 'SUSPENDED') {
+      throw new ForbiddenException('계정이 정지된 상태입니다. 스크립트를 작성할 수 없습니다.');
+    }
+  }
+
   async create(createScriptDto: CreateScriptDto, userId: number) {
+    // 사용자 상태 확인
+    await this.checkUserSuspension(userId);
+
     return this.prisma.script.create({
       data: {
         title: createScriptDto.title,
@@ -95,6 +113,9 @@ export class ScriptsService {
   async update(id: string, updateScriptDto: UpdateScriptDto, userId: number) {
     const scriptId = parseInt(id, 10);
     
+    // 계정 정지 여부 확인
+    await this.checkUserSuspension(userId);
+    
     // 스크립트 소유자 확인
     const script = await this.prisma.script.findUnique({
       where: { id: scriptId },
@@ -125,6 +146,9 @@ export class ScriptsService {
   async remove(id: string, userId: number): Promise<void> {
     const scriptId = parseInt(id, 10);
     
+    // 계정 정지 여부 확인
+    await this.checkUserSuspension(userId);
+    
     // 스크립트 소유자 확인
     const script = await this.prisma.script.findUnique({
       where: { id: scriptId },
@@ -150,6 +174,9 @@ export class ScriptsService {
 
   async shareScript(id: string, shareScriptDto: ShareScriptDto, userId: number) {
     const scriptId = parseInt(id, 10);
+    
+    // 계정 정지 여부 확인
+    await this.checkUserSuspension(userId);
     
     // 스크립트 소유자 확인
     const script = await this.prisma.script.findUnique({
@@ -211,6 +238,9 @@ export class ScriptsService {
   async removeShare(id: string, targetUserId: number, userId: number) {
     const scriptId = parseInt(id, 10);
     
+    // 계정 정지 여부 확인
+    await this.checkUserSuspension(userId);
+    
     // 스크립트 소유자 확인
     const script = await this.prisma.script.findUnique({
       where: { id: scriptId },
@@ -237,6 +267,9 @@ export class ScriptsService {
 
   async getShares(id: string, userId: number) {
     const scriptId = parseInt(id, 10);
+    
+    // 계정 정지 여부 확인
+    await this.checkUserSuspension(userId);
     
     // 스크립트 소유자 확인
     const script = await this.prisma.script.findUnique({

@@ -63,6 +63,7 @@ export interface Script {
   user: {
     id: number;
     email: string;
+    name?: string;
   };
 }
 
@@ -264,5 +265,21 @@ export const searchUsers = async (query: string): Promise<User[]> => {
   const response = await api.get(
     `/users/search?query=${encodeURIComponent(query)}`
   );
+  return response.data;
+};
+
+export const makeUserAdmin = async (userId: number): Promise<User> => {
+  const response = await api.put(`/admin/users/${userId}/make-admin`);
+  return response.data;
+};
+
+export const removeAdminRole = async (userId: number): Promise<User> => {
+  const token = localStorage.getItem('token');
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  };
+  const response = await api.put(`/admin/users/${userId}/remove-admin`, {}, config);
   return response.data;
 };

@@ -37,6 +37,7 @@ import {
   Divider,
   Badge,
   Link,
+  Grid,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -48,6 +49,7 @@ import {
   ContentCopy as ContentCopyIcon,
   PersonRemove as PersonRemoveIcon,
   Logout as LogoutIcon,
+  Visibility as VisibilityIcon,
 } from "@mui/icons-material";
 import {
   getMyScripts,
@@ -118,6 +120,7 @@ export default function MyScriptsPage() {
         .includes(sharedScriptSearch.toLowerCase()) ||
       false
   );
+  const isSuspended = user?.role === 'SUSPENDED';
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -596,14 +599,22 @@ export default function MyScriptsPage() {
             스크립트 관리
           </Typography>
 
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => router.push("/my-scripts/new")}
-          >
-            새 스크립트
-          </Button>
+          {!isSuspended && (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => router.push("/my-scripts/new")}
+            >
+              새 스크립트
+            </Button>
+          )}
         </Box>
+
+        {isSuspended && (
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            계정이 정지되어 스크립트 작성이 제한됩니다.
+          </Alert>
+        )}
 
         <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
           <Tabs
@@ -663,14 +674,16 @@ export default function MyScriptsPage() {
                 <Typography variant="h6" color="text.secondary">
                   아직 작성한 스크립트가 없습니다.
                 </Typography>
-                <Button
-                  variant="contained"
-                  startIcon={<AddIcon />}
-                  onClick={() => router.push("/my-scripts/new")}
-                  sx={{ mt: 2 }}
-                >
-                  새 스크립트 작성하기
-                </Button>
+                {!isSuspended && (
+                  <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={() => router.push("/my-scripts/new")}
+                    sx={{ mt: 2 }}
+                  >
+                    새 스크립트 작성하기
+                  </Button>
+                )}
               </Paper>
             ) : filteredMyScripts.length === 0 ? (
               <Paper sx={{ p: 4, textAlign: "center" }}>
@@ -679,86 +692,79 @@ export default function MyScriptsPage() {
                 </Typography>
               </Paper>
             ) : (
-              <Stack spacing={2}>
+              <Grid container spacing={2}>
                 {filteredMyScripts.map((script) => (
-                  <Card key={script.id}>
-                    <CardContent>
-                      <Typography
-                        variant="h6"
-                        gutterBottom
-                        sx={{
-                          cursor: "pointer",
-                          "&:hover": {
-                            color: "primary.main",
-                            textDecoration: "underline",
-                          },
-                        }}
-                        onClick={() => router.push(`/my-scripts/${script.id}`)}
-                      >
-                        {script.title}
-                        {script.isPublic && (
-                          <Chip
-                            label="공개"
-                            size="small"
-                            color="primary"
-                            sx={{ ml: 1, fontSize: "0.7rem" }}
-                          />
-                        )}
-                      </Typography>
-                      {script.description && (
+                  <Grid item xs={12} sm={6} md={4} key={script.id}>
+                    <Card>
+                      <CardContent>
                         <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          paragraph
+                          variant="h6"
+                          gutterBottom
+                          sx={{
+                            cursor: "pointer",
+                            "&:hover": {
+                              color: "primary.main",
+                              textDecoration: "underline",
+                            },
+                          }}
+                          onClick={() => router.push(`/my-scripts/${script.id}`)}
                         >
-                          {script.description}
+                          {script.title}
+                          {script.isPublic && (
+                            <Chip
+                              label="공개"
+                              size="small"
+                              color="primary"
+                              sx={{ ml: 1, fontSize: "0.7rem" }}
+                            />
+                          )}
                         </Typography>
-                      )}
-                      <Typography variant="caption" color="text.secondary">
-                        마지막 수정:{" "}
-                        {new Date(script.updatedAt).toLocaleString()}
-                      </Typography>
-                    </CardContent>
-                    <CardActions>
-                      <Tooltip title="수정">
-                        <IconButton
-                          onClick={() =>
-                            router.push(`/my-scripts/${script.id}/edit`)
-                          }
-                        >
-                          <EditIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="삭제">
-                        <IconButton
-                          onClick={() => handleDelete(script.id)}
-                          color="error"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="공유">
-                        <IconButton
-                          onClick={() => handleOpenShareModal(script)}
-                          color="primary"
-                        >
-                          <ShareIcon />
-                        </IconButton>
-                      </Tooltip>
-                      {script.isPublic && (
-                        <Tooltip title="공유 취소">
-                          <IconButton
-                            onClick={() => handleQuickCancelShare(script.id)}
-                            color="error"
+                        {script.description && (
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            paragraph
                           >
-                            <CloseIcon />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                    </CardActions>
-                  </Card>
+                            {script.description}
+                          </Typography>
+                        )}
+                        <Typography variant="caption" color="text.secondary">
+                          마지막 수정:{" "}
+                          {new Date(script.updatedAt).toLocaleString()}
+                        </Typography>
+                      </CardContent>
+                      <CardActions>
+                        <Stack direction="row" spacing={1}>
+                          <Tooltip title="스크립트 보기">
+                            <IconButton onClick={() => router.push(`/my-scripts/${script.id}`)}>
+                              <VisibilityIcon />
+                            </IconButton>
+                          </Tooltip>
+                          {!isSuspended && (
+                            <>
+                              <Tooltip title="스크립트 수정">
+                                <IconButton onClick={() => router.push(`/my-scripts/${script.id}/edit`)}>
+                                  <EditIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="스크립트 삭제">
+                                <IconButton onClick={() => handleDelete(script.id)}>
+                                  <DeleteIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="스크립트 공유">
+                                <IconButton onClick={() => handleOpenShareModal(script)}>
+                                  <ShareIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </>
+                          )}
+                        </Stack>
+                      </CardActions>
+                    </Card>
+                  </Grid>
                 ))}
-              </Stack>
+              </Grid>
             )}
           </>
         )}
@@ -802,66 +808,68 @@ export default function MyScriptsPage() {
                 </Typography>
               </Paper>
             ) : (
-              <Stack spacing={2}>
+              <Grid container spacing={2}>
                 {filteredSharedScripts.map((script) => (
-                  <Card key={script.id}>
-                    <CardContent>
-                      <Typography
-                        variant="h6"
-                        gutterBottom
-                        sx={{
-                          cursor: "pointer",
-                          "&:hover": {
-                            color: "primary.main",
-                            textDecoration: "underline",
-                          },
-                        }}
-                        onClick={() => router.push(`/my-scripts/${script.id}`)}
-                      >
-                        {script.title}
-                        {script.isPublic && (
-                          <Chip
-                            label="공개"
-                            size="small"
-                            color="primary"
-                            sx={{ ml: 1, fontSize: "0.7rem" }}
-                          />
-                        )}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        gutterBottom
-                      >
-                        작성자: {script.user?.email || "알 수 없음"}
-                      </Typography>
-                      {script.description && (
+                  <Grid item xs={12} sm={6} md={4} key={script.id}>
+                    <Card>
+                      <CardContent>
+                        <Typography
+                          variant="h6"
+                          gutterBottom
+                          sx={{
+                            cursor: "pointer",
+                            "&:hover": {
+                              color: "primary.main",
+                              textDecoration: "underline",
+                            },
+                          }}
+                          onClick={() => router.push(`/my-scripts/${script.id}`)}
+                        >
+                          {script.title}
+                          {script.isPublic && (
+                            <Chip
+                              label="공개"
+                              size="small"
+                              color="primary"
+                              sx={{ ml: 1, fontSize: "0.7rem" }}
+                            />
+                          )}
+                        </Typography>
                         <Typography
                           variant="body2"
                           color="text.secondary"
-                          paragraph
+                          gutterBottom
                         >
-                          {script.description}
+                          작성자: {script.user?.email || "알 수 없음"}
                         </Typography>
-                      )}
-                      <Typography variant="caption" color="text.secondary">
-                        마지막 수정:{" "}
-                        {new Date(script.updatedAt).toLocaleString()}
-                      </Typography>
-                    </CardContent>
-                    <CardActions>
-                      <Tooltip title="복제">
-                        <IconButton
-                          onClick={() => handleCopyScript(script)}
-                          color="primary"
-                        >
-                          <ContentCopyIcon />
-                        </IconButton>
-                      </Tooltip>
-                    </CardActions>
-                  </Card>
+                        {script.description && (
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            paragraph
+                          >
+                            {script.description}
+                          </Typography>
+                        )}
+                        <Typography variant="caption" color="text.secondary">
+                          마지막 수정:{" "}
+                          {new Date(script.updatedAt).toLocaleString()}
+                        </Typography>
+                      </CardContent>
+                      <CardActions>
+                        <Tooltip title="복제">
+                          <IconButton
+                            onClick={() => handleCopyScript(script)}
+                            color="primary"
+                          >
+                            <ContentCopyIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </CardActions>
+                    </Card>
+                  </Grid>
                 ))}
-              </Stack>
+              </Grid>
             )}
           </>
         )}

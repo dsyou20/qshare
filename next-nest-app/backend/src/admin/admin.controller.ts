@@ -220,4 +220,133 @@ export class AdminController {
       totalFavorites,
     };
   }
+
+  @ApiOperation({ summary: '사용자 계정 정지', description: '특정 사용자의 계정을 정지합니다.' })
+  @ApiParam({ name: 'id', description: '사용자 ID' })
+  @ApiResponse({ 
+    status: 200, 
+    description: '계정 정지 성공',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number' },
+        email: { type: 'string' },
+        name: { type: 'string' },
+        role: { type: 'string' },
+        updatedAt: { type: 'string' }
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: '인증되지 않은 사용자' })
+  @ApiResponse({ status: 403, description: '관리자 권한 없음' })
+  @ApiResponse({ status: 404, description: '사용자를 찾을 수 없음' })
+  @Put('users/:id/suspend')
+  async suspendUser(@Param('id') id: string) {
+    const userId = parseInt(id);
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { role: 'SUSPENDED' },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  @ApiOperation({ summary: '사용자 계정 정지 해제', description: '정지된 사용자의 계정을 정상으로 복구합니다.' })
+  @ApiParam({ name: 'id', description: '사용자 ID' })
+  @ApiResponse({ 
+    status: 200, 
+    description: '계정 정지 해제 성공',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number' },
+        email: { type: 'string' },
+        name: { type: 'string' },
+        role: { type: 'string' },
+        updatedAt: { type: 'string' }
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: '인증되지 않은 사용자' })
+  @ApiResponse({ status: 403, description: '관리자 권한 없음' })
+  @ApiResponse({ status: 404, description: '사용자를 찾을 수 없음' })
+  @Put('users/:id/unsuspend')
+  async unsuspendUser(@Param('id') id: string) {
+    const userId = parseInt(id);
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { role: 'USER' },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  @ApiOperation({ summary: '관리자 권한 해제', description: '특정 사용자의 관리자 권한을 해제합니다.' })
+  @ApiParam({ name: 'id', description: '사용자 ID' })
+  @ApiResponse({ 
+    status: 200, 
+    description: '관리자 권한 해제 성공',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number' },
+        email: { type: 'string' },
+        name: { type: 'string' },
+        role: { type: 'string' },
+        updatedAt: { type: 'string' }
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: '인증되지 않은 사용자' })
+  @ApiResponse({ status: 403, description: '관리자 권한 없음' })
+  @ApiResponse({ status: 404, description: '사용자를 찾을 수 없음' })
+  @Put('users/:id/remove-admin')
+  async removeAdminRole(@Param('id') id: string) {
+    const userId = parseInt(id);
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { role: 'USER' },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        updatedAt: true,
+      },
+    });
+  }
 } 

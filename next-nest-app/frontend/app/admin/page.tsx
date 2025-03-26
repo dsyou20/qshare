@@ -28,11 +28,18 @@ import {
   Grid,
   Card,
   CardContent,
+  Collapse,
+  Divider,
 } from '@mui/material';
 import {
   Edit as EditIcon,
   AdminPanelSettings as AdminIcon,
+  Block as BlockIcon,
+  CheckCircle as CheckCircleIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon,
 } from '@mui/icons-material';
+import { makeUserAdmin, removeAdminRole } from '@/lib/scripts';
 
 interface User {
   id: number;
@@ -70,6 +77,7 @@ export default function AdminPage() {
   const [passwordDialog, setPasswordDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newPassword, setNewPassword] = useState('');
+  const [expandedScripts, setExpandedScripts] = useState<number[]>([]);
 
   useEffect(() => {
     if (!authLoading && (!user || user.role !== 'ADMIN')) {
@@ -113,14 +121,23 @@ export default function AdminPage() {
 
   const handleMakeAdmin = async (userId: number) => {
     try {
-      await axios.put(`/api/admin/users/${userId}/make-admin`, {}, {
-        headers: getAuthHeader()
-      });
+      await makeUserAdmin(userId);
       fetchData();
       alert('관리자 권한이 부여되었습니다.');
     } catch (error) {
       console.error('관리자 권한 부여 실패:', error);
       alert('관리자 권한 부여에 실패했습니다.');
+    }
+  };
+
+  const handleRemoveAdmin = async (userId: number) => {
+    try {
+      await removeAdminRole(userId);
+      fetchData();
+      alert('관리자 권한이 해제되었습니다.');
+    } catch (error) {
+      console.error('관리자 권한 해제 실패:', error);
+      alert('관리자 권한 해제에 실패했습니다.');
     }
   };
 
@@ -140,6 +157,42 @@ export default function AdminPage() {
       console.error('비밀번호 변경 실패:', error);
       alert('비밀번호 변경에 실패했습니다.');
     }
+  };
+
+  const handleSuspendUser = async (userId: number) => {
+    try {
+      const config = {
+        headers: getAuthHeader()
+      };
+      await axios.put(`/api/admin/users/${userId}/suspend`, {}, config);
+      fetchData();
+      alert('계정이 정지되었습니다.');
+    } catch (error) {
+      console.error('계정 정지 실패:', error);
+      alert('계정 정지에 실패했습니다.');
+    }
+  };
+
+  const handleUnsuspendUser = async (userId: number) => {
+    try {
+      const config = {
+        headers: getAuthHeader()
+      };
+      await axios.put(`/api/admin/users/${userId}/unsuspend`, {}, config);
+      fetchData();
+      alert('계정 정지가 해제되었습니다.');
+    } catch (error) {
+      console.error('계정 정지 해제 실패:', error);
+      alert('계정 정지 해제에 실패했습니다.');
+    }
+  };
+
+  const handleExpandScript = (scriptId: number) => {
+    setExpandedScripts(prev => 
+      prev.includes(scriptId) 
+        ? prev.filter(id => id !== scriptId)
+        : [...prev, scriptId]
+    );
   };
 
   if (loading) {
@@ -238,12 +291,43 @@ export default function AdminPage() {
                       비밀번호 변경
                     </Button>
                     {user.role !== 'ADMIN' && (
+                      <>
+                        <Button
+                          size="small"
+                          startIcon={<AdminIcon />}
+                          onClick={() => handleMakeAdmin(user.id)}
+                        >
+                          관리자로 변경
+                        </Button>
+                        {user.role === 'SUSPENDED' ? (
+                          <Button
+                            size="small"
+                            color="success"
+                            startIcon={<CheckCircleIcon />}
+                            onClick={() => handleUnsuspendUser(user.id)}
+                          >
+                            정지 해제
+                          </Button>
+                        ) : (
+                          <Button
+                            size="small"
+                            color="error"
+                            startIcon={<BlockIcon />}
+                            onClick={() => handleSuspendUser(user.id)}
+                          >
+                            계정 정지
+                          </Button>
+                        )}
+                      </>
+                    )}
+                    {user.role === 'ADMIN' && (
                       <Button
                         size="small"
-                        startIcon={<AdminIcon />}
-                        onClick={() => handleMakeAdmin(user.id)}
+                        color="warning"
+                        startIcon={<AdminIcon sx={{ transform: 'rotate(180deg)' }} />}
+                        onClick={() => handleRemoveAdmin(user.id)}
                       >
-                        관리자로 변경
+                        관리자 권한 해제
                       </Button>
                     )}
                   </Stack>
@@ -256,18 +340,57 @@ export default function AdminPage() {
         {activeTab === 1 && (
           <List>
             {scripts.map((script) => (
-              <ListItem key={script.id} divider>
-                <ListItemText
-                  primary={script.title}
-                  secondary={
-                    <>
-                      작성자: {script.author.name} | 공개: {script.isPublic ? '예' : '아니오'} | 
-                      사용 횟수: {script.useCount} | 
-                      작성일: {new Date(script.createdAt).toLocaleDateString()}
-                    </>
-                  }
-                />
-              </ListItem>
+              <Box key={script.id}>
+                <ListItem divider>
+                  <ListItemText
+                    primary={script.title}
+                    secondary={
+                      <>
+                        작성자: {script.author.name} | 공개: {script.isPublic ? '예' : '아니오'} | 
+                        사용 횟수: {script.useCount} | 
+                        작성일: {new Date(script.createdAt).toLocaleDateString()}
+                      </>
+                    }
+                  />
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      edge="end"
+                      onClick={() => handleExpandScript(script.id)}
+                      size="small"
+                    >
+                      {expandedScripts.includes(script.id) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
+                <Collapse in={expandedScripts.includes(script.id)} timeout="auto" unmountOnExit>
+                  <Box sx={{ p: 2, bgcolor: 'background.default' }}>
+                    <Typography variant="subtitle2" gutterBottom>
+                      설명
+                    </Typography>
+                    <Typography variant="body2" paragraph>
+                      {script.description || '설명 없음'}
+                    </Typography>
+                    <Divider sx={{ my: 2 }} />
+                    <Typography variant="subtitle2" gutterBottom>
+                      스크립트 내용
+                    </Typography>
+                    <Paper 
+                      variant="outlined" 
+                      sx={{ 
+                        p: 2, 
+                        bgcolor: 'background.paper',
+                        maxHeight: '300px',
+                        overflow: 'auto',
+                        fontFamily: 'monospace',
+                        whiteSpace: 'pre-wrap',
+                        fontSize: '0.875rem'
+                      }}
+                    >
+                      {script.content}
+                    </Paper>
+                  </Box>
+                </Collapse>
+              </Box>
             ))}
           </List>
         )}

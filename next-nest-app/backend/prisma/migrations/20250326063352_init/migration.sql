@@ -1,11 +1,18 @@
-/*
-  Warnings:
+-- CreateEnum
+CREATE TYPE "UserRole" AS ENUM ('USER', 'ADMIN', 'SUSPENDED');
 
-  - Added the required column `password` to the `User` table without a default value. This is not possible if the table is not empty.
+-- CreateTable
+CREATE TABLE "User" (
+    "id" SERIAL NOT NULL,
+    "email" TEXT NOT NULL,
+    "name" TEXT,
+    "password" TEXT NOT NULL,
+    "role" "UserRole" NOT NULL DEFAULT 'USER',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
-*/
--- AlterTable
-ALTER TABLE "User" ADD COLUMN     "password" TEXT NOT NULL;
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "Script" (
@@ -41,6 +48,9 @@ CREATE TABLE "Favorite" (
 
     CONSTRAINT "Favorite_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE INDEX "Script_authorId_idx" ON "Script"("authorId");
