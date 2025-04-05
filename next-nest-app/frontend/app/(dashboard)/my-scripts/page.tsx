@@ -106,6 +106,7 @@ export default function MyScriptsPage() {
       script.description
         ?.toLowerCase()
         .includes(myScriptSearch.toLowerCase()) ||
+      script.tags?.some(tag => tag.toLowerCase().includes(myScriptSearch.toLowerCase())) ||
       false
   );
   const filteredSharedScripts = sharedScripts.filter(
@@ -114,7 +115,7 @@ export default function MyScriptsPage() {
       script.description
         ?.toLowerCase()
         .includes(sharedScriptSearch.toLowerCase()) ||
-      false ||
+      script.tags?.some(tag => tag.toLowerCase().includes(sharedScriptSearch.toLowerCase())) ||
       script.user?.email
         ?.toLowerCase()
         .includes(sharedScriptSearch.toLowerCase()) ||
@@ -695,71 +696,69 @@ export default function MyScriptsPage() {
               <Grid container spacing={2}>
                 {filteredMyScripts.map((script) => (
                   <Grid item xs={12} sm={6} md={4} key={script.id}>
-                    <Card>
+                    <Card key={script.id} sx={{ mb: 2 }}>
                       <CardContent>
-                        <Typography
-                          variant="h6"
-                          gutterBottom
-                          sx={{
-                            cursor: "pointer",
-                            "&:hover": {
-                              color: "primary.main",
-                              textDecoration: "underline",
-                            },
-                          }}
-                          onClick={() => router.push(`/my-scripts/${script.id}`)}
-                        >
-                          {script.title}
-                          {script.isPublic && (
-                            <Chip
-                              label="공개"
-                              size="small"
-                              color="primary"
-                              sx={{ ml: 1, fontSize: "0.7rem" }}
-                            />
-                          )}
-                        </Typography>
-                        {script.description && (
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            paragraph
-                          >
-                            {script.description}
-                          </Typography>
-                        )}
-                        <Typography variant="caption" color="text.secondary">
-                          마지막 수정:{" "}
-                          {new Date(script.updatedAt).toLocaleString()}
-                        </Typography>
-                      </CardContent>
-                      <CardActions>
-                        <Stack direction="row" spacing={1}>
-                          <Tooltip title="스크립트 보기">
-                            <IconButton onClick={() => router.push(`/my-scripts/${script.id}`)}>
-                              <VisibilityIcon />
-                            </IconButton>
-                          </Tooltip>
-                          {!isSuspended && (
-                            <>
-                              <Tooltip title="스크립트 수정">
-                                <IconButton onClick={() => router.push(`/my-scripts/${script.id}/edit`)}>
+                        <Stack spacing={2}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <Typography variant="h6" component="div">
+                              {script.title}
+                            </Typography>
+                            <Box>
+                              <Tooltip title="수정">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => router.push(`/my-scripts/${script.id}/edit`)}
+                                  disabled={isSuspended}
+                                >
                                   <EditIcon />
                                 </IconButton>
                               </Tooltip>
-                              <Tooltip title="스크립트 삭제">
-                                <IconButton onClick={() => handleDelete(script.id)}>
+                              <Tooltip title="삭제">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleDelete(script.id)}
+                                  disabled={isSuspended}
+                                >
                                   <DeleteIcon />
                                 </IconButton>
                               </Tooltip>
-                              <Tooltip title="스크립트 공유">
-                                <IconButton onClick={() => handleOpenShareModal(script)}>
+                              <Tooltip title="공유">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleOpenShareModal(script)}
+                                  disabled={isSuspended}
+                                >
                                   <ShareIcon />
                                 </IconButton>
                               </Tooltip>
-                            </>
+                            </Box>
+                          </Box>
+                          {script.description && (
+                            <Typography variant="body2" color="text.secondary">
+                              {script.description}
+                            </Typography>
+                          )}
+                          {script.tags && script.tags.length > 0 && (
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                              {script.tags.map((tag) => (
+                                <Chip
+                                  key={tag}
+                                  label={tag}
+                                  size="small"
+                                  variant="outlined"
+                                />
+                              ))}
+                            </Box>
                           )}
                         </Stack>
+                      </CardContent>
+                      <CardActions>
+                        <Button
+                          size="small"
+                          onClick={() => router.push(`/my-scripts/${script.id}`)}
+                        >
+                          자세히 보기
+                        </Button>
                       </CardActions>
                     </Card>
                   </Grid>

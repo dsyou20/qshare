@@ -284,6 +284,24 @@ export default function ScriptDetailPage({
             </Paper>
           )}
 
+          {script.tags && script.tags.length > 0 && (
+            <Paper sx={{ p: 2 }}>
+              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                태그
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                {script.tags.map((tag) => (
+                  <Chip
+                    key={tag}
+                    label={tag}
+                    size="small"
+                    variant="outlined"
+                  />
+                ))}
+              </Box>
+            </Paper>
+          )}
+
           <Paper sx={{ p: 2 }}>
             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
               스크립트 내용

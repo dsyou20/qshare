@@ -52,4 +52,14 @@ layer.triggerRepaint()`,
   @IsBoolean()
   @IsOptional()
   isPublic?: boolean;
+
+  @ApiProperty({
+    description: '태그 목록',
+    example: ['GIS', '레이어', '스타일'],
+    required: false,
+    type: [String],
+    default: []
+  })
+  @IsOptional()
+  tags?: string[];
 }

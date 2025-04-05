@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateScriptDto } from './dto/create-script.dto';
 import { UpdateScriptDto } from './dto/update-script.dto';
 import { ShareScriptDto } from './dto/share-script.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ScriptsService {
@@ -35,6 +36,7 @@ export class ScriptsService {
         content: createScriptDto.code,
         description: createScriptDto.description,
         isPublic: createScriptDto.isPublic,
+        tags: createScriptDto.tags,
         author: {
           connect: { id: userId }
         }
@@ -136,7 +138,9 @@ export class ScriptsService {
         content: updateScriptDto.code,
         description: updateScriptDto.description,
         isPublic: updateScriptDto.isPublic,
-      },
+        tags: updateScriptDto.tags,
+        updatedAt: new Date(),
+      } as any,
       include: {
         author: true,
       },
@@ -308,5 +312,66 @@ export class ScriptsService {
       },
       shares: shares.map(share => share.user)
     };
+  }
+
+  async searchScripts(keyword: string, userId: number) {
+    // 키워드가 없으면 빈 배열 반환
+    if (!keyword || keyword.trim() === '') {
+      return [];
+    }
+
+    const searchKeyword = keyword.trim().toLowerCase();
+
+    // 접근 가능한 공유 스크립트만 검색 (내 스크립트 제외)
+    const scripts = await this.prisma.script.findMany({
+      where: {
+        OR: [
+          // 공개된 스크립트 (내가 작성한 것 제외)
+          { 
+            isPublic: true,
+            NOT: { authorId: userId }
+          },
+          // 공유받은 스크립트
+          {
+            shares: {
+              some: {
+                userId: userId
+              }
+            }
+          }
+        ],
+        AND: {
+          OR: [
+            // 제목에서 검색
+            { title: { contains: searchKeyword, mode: 'insensitive' } },
+            // 설명에서 검색
+            { description: { contains: searchKeyword, mode: 'insensitive' } },
+            // 내용에서 검색
+            { content: { contains: searchKeyword, mode: 'insensitive' } }
+          ]
+        }
+      },
+      orderBy: { updatedAt: 'desc' },
+      include: {
+        author: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+          }
+        }
+      }
+    });
+
+    // 태그에 해당 키워드가 포함된 스크립트 필터링
+    return scripts.filter(script => {
+      return script.tags?.some(tag => 
+        tag.toLowerCase().includes(searchKeyword)
+      ) || 
+      // 이미 제목, 설명, 내용에서 검색된 스크립트도 포함
+      script.title.toLowerCase().includes(searchKeyword) || 
+      (script.description && script.description.toLowerCase().includes(searchKeyword)) || 
+      script.content.toLowerCase().includes(searchKeyword);
+    });
   }
 } 

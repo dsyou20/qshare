@@ -60,6 +60,7 @@ export interface Script {
   isPublic: boolean;
   createdAt: string;
   updatedAt: string;
+  tags: string[];
   user: {
     id: number;
     email: string;
@@ -72,6 +73,7 @@ export interface CreateScriptDto {
   description?: string;
   code: string;
   isPublic?: boolean;
+  tags?: string[];
 }
 
 export interface UpdateScriptDto {
@@ -79,6 +81,7 @@ export interface UpdateScriptDto {
   description?: string;
   code?: string;
   isPublic?: boolean;
+  tags?: string[];
 }
 
 export interface ShareScriptDto {
@@ -283,3 +286,28 @@ export const removeAdminRole = async (userId: number): Promise<User> => {
   const response = await api.put(`/admin/users/${userId}/remove-admin`, {}, config);
   return response.data;
 };
+
+export async function searchScripts(keyword: string): Promise<Script[]> {
+  try {
+    const response = await api.get(`/scripts/search?keyword=${encodeURIComponent(keyword)}`);
+    console.log("검색 응답 데이터:", response.data);
+    
+    // 응답 데이터 변환 (content를 code로, author를 user로)
+    return response.data.map((script: any) => {
+      const transformed = {
+        ...script,
+        user: script.author || script.user,
+      };
+
+      if (script.content && !script.code) {
+        transformed.code = script.content;
+      }
+
+      return transformed;
+    });
+  } catch (error) {
+    console.error('스크립트 검색 실패:', error);
+    // 빈 배열 반환
+    return [];
+  }
+}

@@ -18,6 +18,7 @@ import { Save as SaveIcon } from "@mui/icons-material";
 import dynamic from "next/dynamic";
 import type { MarkerSeverity } from "monaco-editor";
 import { createScript } from "@/lib/scripts";
+import TagInput from "@/components/TagInput";
 
 const MonacoEditor = dynamic(
   () => import("@monaco-editor/react").then((mod) => mod.Editor),
@@ -51,6 +52,7 @@ export default function NewScriptPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [code, setCode] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
   const [errors, setErrors] = useState<EditorError[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,6 +75,7 @@ export default function NewScriptPage() {
         description: description.trim() || undefined,
         code: code.trim(),
         isPublic: false,
+        tags: tags,
       };
 
       await createScript(scriptData);
@@ -154,6 +157,11 @@ export default function NewScriptPage() {
                 fullWidth
                 multiline
                 rows={2}
+                disabled={saving}
+              />
+              <TagInput
+                tags={tags}
+                onChange={setTags}
                 disabled={saving}
               />
             </Stack>

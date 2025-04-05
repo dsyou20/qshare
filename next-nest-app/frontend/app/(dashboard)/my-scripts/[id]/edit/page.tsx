@@ -18,6 +18,7 @@ import { Save as SaveIcon } from "@mui/icons-material";
 import dynamic from "next/dynamic";
 import type { MarkerSeverity } from "monaco-editor";
 import { getScript, updateScript, type Script } from "@/lib/scripts";
+import TagInput from "@/components/TagInput";
 
 const MonacoEditor = dynamic(
   () => import("@monaco-editor/react").then((mod) => mod.Editor),
@@ -51,6 +52,7 @@ export default function EditScriptPage({ params }: { params: { id: string } }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [code, setCode] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
   const [errors, setErrors] = useState<EditorError[]>([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -73,6 +75,7 @@ export default function EditScriptPage({ params }: { params: { id: string } }) {
 
         setTitle(script.title);
         setDescription(script.description || "");
+        setTags(script.tags || []);
 
         // content 또는 code 필드 확인
         if (script.code) {
@@ -116,6 +119,7 @@ export default function EditScriptPage({ params }: { params: { id: string } }) {
         title,
         description,
         code,
+        tags,
       };
 
       console.log("스크립트 업데이트 요청 데이터:", updateData);
@@ -202,6 +206,11 @@ export default function EditScriptPage({ params }: { params: { id: string } }) {
                 fullWidth
                 multiline
                 rows={2}
+                disabled={saving}
+              />
+              <TagInput
+                tags={tags}
+                onChange={setTags}
                 disabled={saving}
               />
             </Stack>

@@ -39,6 +39,7 @@ model Script {
   title       String
   content     String    // Python 스크립트 내용
   description String?   // 스크립트 설명
+  tags        String[]  @default([])  // 태그 목록
   isPublic    Boolean   @default(false)  // 전체 공개 여부
   useCount    Int       @default(0)      // 사용 횟수
   createdAt   DateTime  @default(now())

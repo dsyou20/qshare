@@ -1,11 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query } from '@nestjs/common';
 import { ScriptsService } from './scripts.service';
 import { CreateScriptDto } from './dto/create-script.dto';
 import { UpdateScriptDto } from './dto/update-script.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ShareScriptDto } from './dto/share-script.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiBody, ApiQuery } from '@nestjs/swagger';
 import { ScriptResponseDto } from '../dto/script.dto';
+import { SearchScriptDto } from './dto/search-script.dto';
 
 @ApiTags('scripts')
 @ApiBearerAuth('access-token')
@@ -21,6 +22,15 @@ export class ScriptsController {
   @ApiResponse({ status: 401, description: '인증되지 않은 사용자' })
   create(@Body() createScriptDto: CreateScriptDto, @Request() req) {
     return this.scriptsService.create(createScriptDto, req.user.id);
+  }
+
+  @Get('search')
+  @ApiOperation({ summary: '스크립트 검색', description: '키워드로 스크립트를 검색합니다. 제목, 설명, 내용, 태그에서 검색합니다.' })
+  @ApiQuery({ name: 'keyword', description: '검색 키워드', required: true })
+  @ApiResponse({ status: 200, description: '검색 성공', type: [ScriptResponseDto] })
+  @ApiResponse({ status: 401, description: '인증되지 않은 사용자' })
+  search(@Query('keyword') keyword: string, @Request() req) {
+    return this.scriptsService.searchScripts(keyword, req.user.id);
   }
 
   @Get('my')
